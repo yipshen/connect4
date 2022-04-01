@@ -7,3 +7,19 @@ edition = "2021"
 
 [dependencies]
 cursive = "0.17"
+maplit = { version = "1.0", optional = true }
+term_size = { version = "0.3", optional = true }
+
+[dependencies.ncurses]
+features = ["wide"]
+optional = true
+version = "5.99.0"
+
+[dependencies.crossterm]
+optional = true
+version = "0.23"
+
+[features]
+default = ["ncurses-backend"]
+ncurses-backend = ["ncurses", "maplit", "term_size"]
+crossterm-backend = ["crossterm"]

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use cursive::{
     direction::Direction,
     event::{Event, EventResult, Key},
@@ -53,6 +55,7 @@ struct BoardView {
     overlay: Vec<game::Token>,
     focus: usize,
     winner: game::Token,
+    winner_plays: HashSet<(usize, usize)>,
 }
 
 impl BoardView {
@@ -65,6 +68,7 @@ impl BoardView {
             overlay: overlay,
             focus: 0,
             winner: game::Token::Invalid,
+            winner_plays: HashSet::new(),
         }
     }
 
@@ -104,11 +108,7 @@ impl cursive::view::View for BoardView {
             let col = (i % self.board.cols) * 3;
             let row = self.board.rows - i / self.board.cols;
 
-            let text = match *cell {
-                game::Token::Invalid => " ",
-                game::Token::Red => " ",
-                game::Token::Yellow => " ",
-            };
+            let text = if self.winner_plays.contains(&(i % self.board.cols, i / self.board.cols)) { "*" } else { " " };
 
             let color = match *cell {
                 game::Token::Invalid => Color::RgbLowRes(2, 2, 2),
@@ -156,8 +156,9 @@ impl cursive::view::View for BoardView {
             Event::Char(' ') => {
                 match self.board.drop(self.focus) {
                     Ok(_) => {
-                        if self.board.check_win() {
+                        if let Some(winner_plays) = self.board.check_win() {
                             self.winner = self.board.current_token;
+                            self.winner_plays = HashSet::from_iter(winner_plays.iter().cloned());
                         }
                         let cell_id = self.cell_id(self.focus, self.board.find_row_for_col(self.focus).unwrap());
                         self.overlay[cell_id] = self.board.current_token;

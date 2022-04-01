@@ -150,75 +150,75 @@ impl Board {
     }
 
     // Check whether the last play generates a winning board.
-    pub fn check_win(&self) -> bool {
+    pub fn check_win(&self) -> Option<Vec<(usize, usize)>> {
         if self.history.is_empty() {
-            return false;
+            return None;
         }
 
         let col = *self.history.last().unwrap();
         let row = self.find_row_for_col(col).unwrap();
 
         // Check -
-        let mut counter = 0;
+        let mut plays = Vec::new();
         for c in 0..self.cols {
             if self.board[c][row] == self.board[col][row] {
-                counter += 1;
-                if counter == 4 {
-                    return true;
+                plays.push((c, row));
+                if plays.len() == 4 {
+                    return Some(plays);
                 }
             } else {
-                counter = 0;
+                plays.clear();
             }
         }
 
         // Check |
-        let mut counter = 0;
+        let mut plays = Vec::new();
         for r in 0..self.rows {
             if self.board[col][r] == self.board[col][row] {
-                counter += 1;
-                if counter == 4 {
-                    return true;
+                plays.push((col, r));
+                if plays.len() == 4 {
+                    return Some(plays);
                 }
             } else {
-                counter = 0;
+                plays.clear();
             }
         }
 
         // Check \
-        let mut counter = 0;
+        let mut plays = Vec::new();
         let shift = cmp::min(col, self.rows - row - 1);
         let top_left = (col - shift, row + shift);
         let shift = cmp::min(self.cols - col - 1, row);
         let bottom_right = (col + shift, row - shift);
         for (c, r) in (top_left.0..bottom_right.0 + 1).zip((bottom_right.1..top_left.1 + 1).rev()) {
             if self.board[c][r] == self.board[col][row] {
-                counter += 1;
-                if counter == 4 {
-                    return true;
+                plays.push((c, r));
+                if plays.len() == 4 {
+                    return Some(plays);
                 }
             } else {
-                counter = 0;
+                plays.clear();
             }
         }
 
         // Check /
-        let mut counter = 0;
+        let mut plays = Vec::new();
         let shift = cmp::min(self.cols - col - 1, self.rows - row - 1);
         let top_right = (col + shift, row + shift);
         let shift = cmp::min(col, row);
         let bottom_left = (col - shift, row - shift);
         for (c, r) in (bottom_left.0..top_right.0 + 1).zip(bottom_left.1..top_right.1 + 1) {
             if self.board[c][r] == self.board[col][row] {
-                counter += 1;
-                if counter == 4 {
-                    return true;
+                plays.push((c, r));
+                if plays.len() == 4 {
+                    return Some(plays);
                 }
             } else {
-                counter = 0;
+                plays.clear();
             }
         }
 
-        false
+        None
     }
 
     // Find the corresponding row of the last play for the given col.
